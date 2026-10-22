@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -597,15 +599,18 @@ async function submit(){
   try{
     if(!sb) throw {code:"unconfigured"};
     const sv=SERVICES[state.service], f=k=>(state.form[k]||"").trim();
-    const { error } = await sb.from("crg_requests").insert({
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej({code:"timeout"}),20000));
+    const { error } = await Promise.race([sb.from("crg_requests").insert({
       service_key:state.service, service:`${sv.zh} (${sv.en})`, items:[...state.picked],
       emp_no:f("empNo"), name:f("name"), dept:f("dept"), email:f("email"), contact:f("contact"), note:f("note")
-    });
+    }), timeout]);
     if(error) throw error;
     state.sending=false; state.step=4; render();
   }catch(e){
     state.sending=false;
-    state.error = e?.code==="unconfigured"
+    state.error = e?.code==="timeout"
+      ? "連線逾時，資料可能沒有送出。請重新整理頁面後再試一次。"
+      : e?.code==="unconfigured"
       ? "網站尚未連接資料庫（請管理者在 index.html 填入 Supabase 設定）。"
       : "送出時發生問題，請確認網路連線後再試一次。";
     render(false);
@@ -761,7 +766,8 @@ async function startContent(){
   await checkAdmin();
   if(canAdmin) loadInbox();
   if(state.view==="inboxv"||state.view==="admin") render(false);
-  sb.auth.onAuthStateChange(async ()=>{ const was=canAdmin; await checkAdmin(); if(canAdmin&&!was) loadInbox(); if(state.view==="inboxv"||state.view==="admin") render(false); });
+  // Never await Supabase calls inside this callback (it holds the auth lock); defer them.
+  sb.auth.onAuthStateChange(()=>{ setTimeout(async ()=>{ const was=canAdmin; await checkAdmin(); if(canAdmin&&!was) loadInbox(); if(state.view==="inboxv"||state.view==="admin") render(false); },0); });
 }
 function loginHTML(){
   if(!sb) return `<div class="empty">網站尚未連接 Supabase。請先在 index.html 填入專案網址與金鑰。</div>`;

@@ -1,5 +1,4 @@
 
-
 <!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -70,7 +69,23 @@ main.page{padding-block:24px 56px;flex:1}
 .contact .cp:hover{background:rgba(243,241,234,.15)}
 .contact .cp:focus-visible{outline:2px solid var(--band-accent);outline-offset:2px}
 @media (max-width:760px){.contact .cols{grid-template-columns:1fr}}
+.steps-block{display:flex;flex-direction:column;align-items:center;gap:10px}
+.steps-container{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.steps-container p{margin:0;white-space:nowrap;font-size:14px;font-weight:700;color:var(--brand-deep)}
 ol.steps{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+/* flow timeline */
+.timeline{position:relative;width:min(560px,100%)}
+.timeline .track{position:absolute;top:14px;left:12.5%;right:12.5%;height:4px;border-radius:2px;background:var(--line)}
+.timeline .fill{display:block;height:100%;width:0;border-radius:2px;background:var(--brand);transition:width .45s ease}
+.timeline ol{position:relative;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr)}
+.timeline li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.timeline b{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:14px;font-weight:800;background:var(--surface);color:var(--muted);border:2.5px solid var(--line);transition:background .3s,border-color .3s,color .3s,transform .3s}
+.timeline b svg{width:15px;height:15px}
+.timeline span{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.timeline li.done b{background:var(--brand);border-color:var(--brand);color:#fff}
+.timeline li.on b{border-color:var(--brand);color:var(--brand-deep);transform:scale(1.12);box-shadow:0 0 0 5px color-mix(in srgb,var(--brand) 18%,transparent)}
+.timeline li.on span,.timeline li.done span{color:var(--brand-deep);font-weight:700}
+@media (max-width:540px){.steps-container{gap:10px}.timeline span{font-size:11.5px}}
 ol.steps li{font-size:12.5px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
 ol.steps li.on{background:var(--brand);border-color:var(--brand);color:#fff}
 ol.steps li.done{color:var(--brand);border-color:var(--brand)}
@@ -91,6 +106,8 @@ ol.steps li.done{color:var(--brand);border-color:var(--brand)}
 .hub .zh{font-size:clamp(12px,1.9vw,15px);font-weight:700}
 .hub .sub{font-family:var(--f-display);font-weight:600;font-size:clamp(9px,1.4vw,12px);letter-spacing:.14em;color:var(--muted)}
 .hub .bubble{position:absolute;bottom:88%;left:62%;margin:0;background:var(--surface);color:var(--brand-deep);border:2px solid var(--brand);border-radius:18px;padding:9px 16px;font-size:clamp(14px,1.9vw,16.5px);font-weight:700;line-height:1.45;letter-spacing:.04em;white-space:nowrap;box-shadow:0 8px 18px rgba(60,80,60,.14);z-index:2;text-align:left}
+.hub .bubble{transition:opacity .26s ease,transform .26s ease}
+.hub .bubble.swap{opacity:0;transform:translateY(4px)}
 .hub .bubble::after{content:"";position:absolute;left:22px;bottom:-9px;width:14px;height:14px;background:var(--surface);border-right:2px solid var(--brand);border-bottom:2px solid var(--brand);transform:rotate(45deg) skew(8deg,8deg)}
 .hub img{width:96%;height:auto;display:block;filter:drop-shadow(0 8px 14px rgba(60,80,60,.18))}
 .hub .cap{font-size:clamp(12px,1.8vw,15px);font-weight:700;margin-top:-2%}
@@ -248,6 +265,7 @@ form.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
 .row1{display:flex;gap:6px;align-items:center}
+.row1 textarea{flex:1}
 .mini{font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:5px 10px;cursor:pointer;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);white-space:nowrap}
 .mini:hover:not(:disabled){border-color:var(--brand)}
 .mini:disabled{opacity:.4;cursor:not-allowed}
@@ -333,14 +351,23 @@ ol.pubs li{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius
   <div class="wrap">
     <section class="about" id="about">
       <h2 id="aboutTitle">研究諮詢小組</h2>
-      <p id="aboutBody">以臨床需求為出發點，結合 AI 工具與 R 程式分析，協助臨床同仁加速研究執行與論文投稿流程。</p>
+      <p id="aboutBody">結合 AI 工具與 R 程式分析，協助臨床同仁加速研究執行與論文投稿流程。</p>
       <p class="strong" id="aboutStrong">從數據分析到論文投稿，提供一站式研究支持。</p>
     </section>
-    <ol class="steps" id="steps" aria-label="申請步驟">
-      <li data-s="1">選擇服務類型</li>
-      <li data-s="2">選擇服務項目</li>
-      <li data-s="3">填寫基本資料</li>
-    </ol>
+    <div class="steps-block" id="stepsWrap">
+      <div class="steps-container">
+        <p>現在階段</p>
+      </div>
+      <div class="timeline">
+        <div class="track"><span class="fill" id="tlFill"></span></div>
+        <ol id="timeline" aria-label="申請步驟">
+          <li data-s="1"><b>1</b><span>選擇類型</span></li>
+          <li data-s="2"><b>2</b><span>勾選項目</span></li>
+          <li data-s="3"><b>3</b><span>填寫資料</span></li>
+          <li data-s="4"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b><span>送出完成</span></li>
+        </ol>
+      </div>
+    </div>
     <div id="app"></div>
   </div>
 </main>
@@ -351,8 +378,8 @@ ol.pubs li{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius
     <h2>聯絡我們<small>教學研究部　臨床研究組　研究諮詢小組</small></h2>
     <div class="cols">
       <div class="col" id="colPhones">
-        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></span>電話分機</h3>
-        <ul id="cPhones"><li><span class="t">10749</span></li><li><span class="t">73291</span></li></ul>
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></span>聯絡專線</h3>
+        <ul id="cPhones"><li><span class="t">吳欣儀：10749</span></li><li><span class="t">陳咨妗：73291</span></li></ul>
       </div>
       <div class="col" id="colEmails">
         <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>電子信箱</h3>
@@ -484,6 +511,13 @@ function wheel({hub,nodes,radius=36,big=false}){
 }
 
 function setSteps(){
+  const cur=typeof state.step==="number"?state.step:1;          // 1..4 (4 = submitted)
+  document.querySelectorAll("#timeline li").forEach(li=>{
+    const s=+li.dataset.s;
+    li.className = (s<cur || cur===4) ? "done" : s===cur ? "on" : "";
+    if(s===cur && cur<4) li.setAttribute("aria-current","step"); else li.removeAttribute("aria-current");
+  });
+  const fill=document.getElementById("tlFill"); if(fill) fill.style.width=((Math.min(cur,4)-1)/3*100)+"%";
   document.querySelectorAll("#steps li").forEach(li=>{
     const s=+li.dataset.s, cur=Math.min(state.step,3);
     li.className = state.step===4 ? "done" : s===cur?"on":s<cur?"done":"";
@@ -494,7 +528,7 @@ function setSteps(){
 function render(anim=true){
   setSteps();
   document.querySelectorAll(".nav button").forEach(b=>{ if(b.dataset.view===state.view) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
-  document.getElementById("steps").hidden = state.view!=="apply" || state.step==="inbox";
+  document.getElementById("stepsWrap").hidden = state.view!=="apply" || state.step==="inbox";
   document.getElementById("about").hidden = state.view!=="apply";
   if(state.view==="results"){ app.innerHTML=expoHTML(); return; }
   if(state.view==="admin"){ app.innerHTML=manageTabs()+adminHTML(); return; }
@@ -504,7 +538,7 @@ function render(anim=true){
     html=`<section class="view ${anim?"enter":""}">
       <div class="prompt"><h1>請選擇您需要的服務類型</h1><p>點選服務類型即可進入下一步</p></div>
       ${wheel({big:true,radius:38,
-        hub:`<div class="hub">${CONTENT.slogan.show&&String(CONTENT.slogan.text).trim()?`<p class="bubble">${br(CONTENT.slogan.text)}</p>`:""}<img src="${ROBOT}" alt="Our Services 服務機器人"></div>`,
+        hub:`<div class="hub">${sloganList().length?`<p class="bubble" id="bubble" aria-live="polite">${br(sloganList()[sloganIdx%sloganList().length])}</p>`:""}<img src="${ROBOT}" alt="Our Services 服務機器人"></div>`,
         nodes:[
           {key:"dry",angle:270,c:SERVICES.dry.c,ic:"doc",label:`${esc(SERVICES.dry.zh)}<small>${esc(SERVICES.dry.en)}</small>`},
           {key:"wet",angle:90,c:SERVICES.wet.c,ic:"flask",label:`${esc(SERVICES.wet.zh)}<small>${esc(SERVICES.wet.en)}</small>`}]})}
@@ -560,10 +594,23 @@ function render(anim=true){
     </section>`;
   }
   app.innerHTML=html;
+  startSloganTimer();
   if(state.step===1) paintInboxLink();
   if(state.step===3) bindForm();
 }
 
+/* rotating robot speech bubble */
+let sloganIdx=0, sloganTimer=null;
+const sloganList=()=>CONTENT.slogan.show ? CONTENT.slogan.texts.map(t=>String(t||"").trim()).filter(Boolean) : [];
+function startSloganTimer(){
+  clearInterval(sloganTimer); sloganTimer=null;
+  const list=sloganList(); if(list.length<2 || !document.getElementById("bubble")) return;
+  sloganTimer=setInterval(()=>{
+    const el=document.getElementById("bubble"); if(!el){clearInterval(sloganTimer); return;}
+    el.classList.add("swap");
+    setTimeout(()=>{ sloganIdx=(sloganIdx+1)%list.length; el.innerHTML=br(list[sloganIdx]); el.classList.remove("swap"); },260);
+  }, CONTENT.slogan.interval*1000);
+}
 function bindForm(){
   const f=document.getElementById("f");
   f.addEventListener("input",e=>{state.form[e.target.name]=e.target.value; e.target.removeAttribute("aria-invalid"); const er=document.getElementById(e.target.name+"-e"); if(er) er.textContent="";});
@@ -708,10 +755,10 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const ICON_NAMES={pen:"筆",chart:"長條圖",clip:"文件板",shield:"盾牌勾選",dots:"其他（…）",doc:"文件",flask:"燒瓶",tube:"試管",dna:"DNA 雙股",rna:"RNA 放大鏡",gel:"電泳膠",qpcr:"擴增曲線"};
 const COLOR_NAMES={"--c-cyan":"天藍","--c-orange":"橘","--c-yellow":"黃","--c-blue":"深藍","--c-teal":"墨綠藍","--c-pink":"粉紅"};
 const DEFAULTS={
-  about:{title:"研究諮詢小組",body:"以臨床需求為出發點，結合 AI 工具與 R 程式分析，協助臨床同仁加速研究執行與論文投稿流程。",strong:"從數據分析到論文投稿，提供一站式研究支持。"},
-  slogan:{show:true,text:"臨床研究好幫手，\n論文投稿找我們！"},
+  about:{title:"研究諮詢小組",body:"結合 AI 工具與 R 程式分析，協助臨床同仁加速研究執行與論文投稿流程。",strong:"從數據分析到論文投稿，提供一站式研究支持。"},
+  slogan:{show:true,texts:["臨床研究好幫手，\n論文投稿找我們！"],interval:4},
   services:clone(SERVICES),
-  contact:{phones:["10749","73291"],emails:["18118@hosp.nycu.edu.tw","18139@hosp.nycu.edu.tw"],places:["蘭陽院區　B2 教學研究部","新民院區　C 棟 2F 臨床實驗室"]},
+  contact:{phones:["吳欣儀：10749","陳咨妗：73291"],emails:["18118@hosp.nycu.edu.tw","18139@hosp.nycu.edu.tw"],places:["蘭陽院區　B2 教學研究部","新民院區　C 棟 2F 臨床實驗室"]},
   pubs:PUBS.map(({year,who,title,cite})=>({year,who,title,cite,url:""}))
 };
 let CONTENT=clone(DEFAULTS);
@@ -720,7 +767,9 @@ function normalize(c){
   const d=clone(DEFAULTS), o=c&&typeof c==="object"?c:{};
   const out={
     about:{...d.about,...(o.about||{})},
-    slogan:{...d.slogan,...(o.slogan||{})},
+    slogan:(()=>{const x={...d.slogan,...(o.slogan||{})};
+      if(!Array.isArray(x.texts)) x.texts = typeof x.text==="string" ? [x.text] : d.slogan.texts;   // older single-slogan content
+      delete x.text; x.interval=Math.min(30,Math.max(2,+x.interval||4)); return x;})(),
     services:{dry:{...d.services.dry,...(o.services?.dry||{})},wet:{...d.services.wet,...(o.services?.wet||{})}},
     contact:{...d.contact,...(o.contact||{})},
     pubs:Array.isArray(o.pubs)?o.pubs:d.pubs
@@ -834,12 +883,15 @@ function adminHTML(){
 
     <div class="panel"><h3>機器人標語</h3>
       <label class="chk"><input type="checkbox" data-path="slogan.show" ${d.slogan.show?"checked":""}> 在第一頁顯示機器人對話框</label>
-      ${inp("slogan.text","標語文字（按 Enter 換行）",{area:true,rows:2})}</div>
+      <div class="fld"><span>標語（可新增多句，會依序輪播；每句可按 Enter 換行）</span>
+        ${d.slogan.texts.map((t,i)=>`<div class="row1"><textarea data-path="slogan.texts.${i}" rows="2">${esc(t)}</textarea><button type="button" class="mini del" data-act="del" data-list="slogan.texts" data-i="${i}" ${d.slogan.texts.length>1?"":"disabled"}>刪除</button></div>`).join("")}
+        <button type="button" class="mini add" data-act="add" data-list="slogan.texts">＋ 新增一句</button></div>
+      <label class="fld" style="max-width:200px"><span>每句停留秒數</span><input type="number" min="2" max="30" data-path="slogan.interval" value="${esc(d.slogan.interval)}"></label></div>
 
     ${svc("dry")}${svc("wet")}
 
     <div class="panel"><h3>聯絡資訊</h3>
-      <div class="grid3">${listEd("contact.phones","電話分機","例如 10749")}${listEd("contact.emails","電子信箱","name@hosp.nycu.edu.tw")}${listEd("contact.places","位置","例如 蘭陽院區　B2 教學研究部")}</div></div>
+      <div class="grid3">${listEd("contact.phones","聯絡專線","例如 吳欣儀：10749")}${listEd("contact.emails","電子信箱","name@hosp.nycu.edu.tw")}${listEd("contact.places","位置","例如 蘭陽院區　B2 教學研究部")}</div></div>
 
     <div class="panel"><h3>歷年成果 <em>${d.pubs.length} 篇</em></h3>
       <p class="hint">「原文連結」可貼 DOI 或期刊網址；留空時「查看原文」會用題目在 PubMed 搜尋。題目留空的那一筆不會顯示。</p>
@@ -1028,7 +1080,7 @@ app.addEventListener("click",e=>{
   const node=e.target.closest(".node"), act=e.target.closest("[data-act]")?.dataset.act;
   if(node){
     const k=node.dataset.k;
-    if(state.step===1){ if(state.service!==k) state.picked=new Set(); state.service=k; state.step=2; render(); document.getElementById("steps").scrollIntoView({block:"start"}); }
+    if(state.step===1){ if(state.service!==k) state.picked=new Set(); state.service=k; state.step=2; render(); document.getElementById("stepsWrap").scrollIntoView({block:"start"}); }
     else if(state.step===2){
       state.picked.has(k)?state.picked.delete(k):state.picked.add(k);
       node.setAttribute("aria-pressed",state.picked.has(k));
@@ -1038,7 +1090,7 @@ app.addEventListener("click",e=>{
     return;
   }
   if(act==="back"){ state.error=""; state.step = state.step===3?2:1; render(); }
-  if(act==="next" && state.picked.size){ state.step=3; render(); document.getElementById("steps").scrollIntoView({block:"start"}); }
+  if(act==="next" && state.picked.size){ state.step=3; render(); document.getElementById("stepsWrap").scrollIntoView({block:"start"}); }
   if(act==="submit") submit();
   if(act==="restart"){ state.step=1; state.service=null; state.picked=new Set(); state.error=""; render(); }
   if(act==="inbox"){ state.step="inbox"; render(); }

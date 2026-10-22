@@ -103,6 +103,7 @@ ol.steps li.done{color:var(--brand);border-color:var(--brand)}
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;padding:8%;text-align:center;
   box-shadow:0 6px 16px rgba(15,60,90,.12);transition:background .2s ease,color .2s ease}
 .node svg.ic{width:34%;height:auto;flex:none}
+.node img.ic{width:38%;aspect-ratio:1/1;height:auto;object-fit:contain;flex:none}
 .node .lbl{font-size:clamp(10.5px,1.7vw,15px);font-weight:700;line-height:1.25;color:var(--fg);text-wrap:balance}
 .node .lbl small{display:block;font-family:var(--f-display);font-weight:600;font-size:.78em;letter-spacing:.06em;color:var(--muted)}
 .node:hover .ring{transform:scale(1.05)}
@@ -171,6 +172,7 @@ form.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
 .req .meta{grid-column:1/-1;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px;min-width:0}
 .req .meta span{overflow-wrap:anywhere}
 .req .items{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.req .rops{grid-column:1/-1;display:flex;justify-content:flex-end}
 .req .note{grid-column:1/-1;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .empty{color:var(--muted);text-align:center;padding:24px;background:var(--surface);border-radius:14px}
 
@@ -251,9 +253,12 @@ form.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
 .mini.del{color:#b0472c}
 .mini:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
 ol.items,ol.pubs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-ol.items li{display:grid;grid-template-columns:44px minmax(0,1fr) 150px 110px auto;gap:10px;align-items:end;padding:10px;border-radius:12px;border:1.5px solid var(--line);border-left:5px solid var(--c)}
+ol.items li{display:grid;grid-template-columns:44px minmax(0,1fr) 140px 100px auto auto;gap:10px;align-items:end;padding:10px;border-radius:12px;border:1.5px solid var(--line);border-left:5px solid var(--c)}
 ol.items .sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--c);color:var(--c);display:flex;align-items:center;justify-content:center}
 ol.items .sw svg{width:22px;height:22px}
+ol.items .sw img{width:28px;height:28px;object-fit:contain}
+.mini.up{display:inline-flex;align-items:center;color:var(--brand-deep)}
+.mini.up:focus-within{outline:3px solid var(--brand);outline-offset:2px}
 ol.items .ops{display:flex;gap:4px}
 ol.pubs li{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;border:1.5px solid var(--line);align-items:flex-start}
 .grid-pub{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 12px;width:100%}
@@ -470,7 +475,7 @@ function wheel({hub,nodes,radius=36,big=false}){
     ${hub}
     ${nodes.map((nd,i)=>`<button type="button" class="node" style="left:${pos[i].x/W*100}%;top:${pos[i].y}%;--c:var(${nd.c});--i:${i};${big?"":`--size:${size}%`}" data-k="${esc(nd.key)}" ${nd.pressed!==undefined?`aria-pressed="${nd.pressed}"`:""}>
       <span class="ring"></span>
-      <span class="core">${icon(nd.ic)}<span class="lbl">${nd.label}</span></span>
+      <span class="core">${nd.img?`<img class="ic" src="${esc(nd.img)}" alt="">`:icon(nd.ic)}<span class="lbl">${nd.label}</span></span>
       ${nd.pressed!==undefined?`<span class="check" style="color:var(${nd.c})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${I.check}</svg></span>`:""}
     </button>`).join("")}
   </div>`;
@@ -509,7 +514,7 @@ function render(anim=true){
       <div class="prompt"><span class="tag">複選</span><h1>${esc(sv.zh)}需要哪些項目？</h1><p>${esc(sv.en)}・可選擇一項或多項，再按「下一步」</p></div>
       ${wheel({radius:37.4,
         hub:`<div class="hub with-cap"><img src="${ROBOT}" alt="Our Services 服務機器人"><div class="cap">${esc(sv.zh)}<small>${esc(sv.en)}</small></div></div>`,
-        nodes:sv.items.map(it=>({key:it.zh,c:it.c,ic:it.ic,label:esc(it.zh),pressed:state.picked.has(it.zh)}))})}
+        nodes:sv.items.map(it=>({key:it.zh,c:it.c,ic:it.ic,img:it.img||"",label:esc(it.zh),pressed:state.picked.has(it.zh)}))})}
       <div class="actions">
         <button type="button" class="btn ghost" data-act="back">上一步</button>
         <span class="count" aria-live="polite">已選 ${state.picked.size} 項</span>
@@ -608,7 +613,20 @@ async function submit(){
 }
 
 /* ---------- owner inbox ---------- */
-let inbox=null, inboxChannel=null;
+let inbox=null, inboxChannel=null, pendingDel=null;
+app.addEventListener("click",async e=>{
+  const b=e.target.closest('[data-act="del-req"]'); if(!b||state.view!=="inboxv"||!sb) return;
+  const id=b.dataset.id;
+  if(String(pendingDel)!==id){
+    pendingDel=id; b.textContent="確定刪除？再按一次";
+    setTimeout(()=>{ if(String(pendingDel)===id){ pendingDel=null; if(b.isConnected) b.textContent="刪除"; } },4000);
+    return;
+  }
+  pendingDel=null; b.disabled=true; b.textContent="刪除中…";
+  const { error } = await sb.from("crg_requests").delete().eq("id",id);
+  if(error){ b.disabled=false; b.textContent="刪除失敗，再試一次"; return; }
+  await loadInbox();
+});
 async function loadInbox(){
   if(!sb||!canAdmin) return;
   const { data, error } = await sb.from("crg_requests").select("*").order("created_at",{ascending:false}).limit(5000);
@@ -636,6 +654,7 @@ function inboxHTML(){
       <div class="items"><span class="chip" style="--c:var(${sv.c})">${esc(e.service)}</span>${(e.items||[]).map(z=>`<span class="chip" style="--c:var(--c-teal)">${esc(z)}</span>`).join("")}</div>
       <div class="meta"><span>信箱：${esc(e.email)}</span><span>聯絡：${esc(e.contact)}</span></div>
       ${e.note?`<div class="note">備註：${esc(e.note)}</div>`:""}
+      ${e.id!=null?`<div class="rops"><button type="button" class="mini del" data-act="del-req" data-id="${esc(e.id)}">${String(pendingDel)===String(e.id)?"確定刪除？再按一次":"刪除"}</button></div>`:""}
     </article>`}).join("");
 }
 
@@ -784,10 +803,13 @@ function adminHTML(){
       <h3>${k==="dry"?"文書型":"實驗型"}服務的圈圈 <em>${s.items.length} 個</em></h3>
       <div class="grid2">${inp(`services.${k}.zh`,"服務名稱")}${inp(`services.${k}.en`,"英文副標")}</div>
       <ol class="items">${s.items.map((it,i)=>`<li style="--c:var(${it.c})">
-        <span class="sw" aria-hidden="true">${icon(it.ic)}</span>
+        <span class="sw" aria-hidden="true">${it.img?`<img src="${esc(it.img)}" alt="">`:icon(it.ic)}</span>
         ${inp(`services.${k}.items.${i}.zh`,"項目名稱",{cls:"grow"})}
         ${sel(`services.${k}.items.${i}.ic`,"圖示",ICON_NAMES)}
         ${sel(`services.${k}.items.${i}.c`,"顏色",COLOR_NAMES)}
+        <div class="fld"><span>自訂圖片</span><div class="row1">
+          <label class="mini up">${it.img?"更換":"上傳"}<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-img="services.${k}.items.${i}" hidden></label>
+          ${it.img?`<button type="button" class="mini del" data-act="img-rm" data-p="services.${k}.items.${i}">移除</button>`:""}</div></div>
         <div class="ops">
           <button type="button" class="mini" data-act="up" data-list="services.${k}.items" data-i="${i}" ${i?"":"disabled"} aria-label="上移">↑</button>
           <button type="button" class="mini" data-act="down" data-list="services.${k}.items" data-i="${i}" ${i<s.items.length-1?"":"disabled"} aria-label="下移">↓</button>
@@ -843,11 +865,41 @@ app.addEventListener("input",e=>{
   if(el.tagName==="SELECT"){ const li=el.closest("li"); if(li){ const p=el.dataset.path.replace(/\.(ic|c)$/,""); const it=getPath(draft,p); li.style.setProperty("--c",`var(${it.c})`); li.querySelector(".sw").innerHTML=icon(it.ic);} }
 });
 app.addEventListener("change",e=>{ if(state.view==="admin" && e.target.type==="checkbox") e.target.dispatchEvent(new Event("input",{bubbles:true})); });
+function toIconData(file){
+  return new Promise((res,rej)=>{
+    if(!/^image\//.test(file.type)) return rej(new Error("請選擇圖片檔（PNG、JPG、WebP 或 SVG）"));
+    if(file.size>5*1024*1024) return rej(new Error("圖片太大，請小於 5MB"));
+    const fr=new FileReader();
+    fr.onerror=()=>rej(new Error("讀取圖片失敗"));
+    fr.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error("無法讀取這張圖片"));
+      img.onload=()=>{
+        const max=160, sc=Math.min(1,max/Math.max(img.naturalWidth||max,img.naturalHeight||max));
+        const w=Math.max(1,Math.round((img.naturalWidth||max)*sc)), h=Math.max(1,Math.round((img.naturalHeight||max)*sc));
+        const c=document.createElement("canvas"); c.width=w; c.height=h;
+        c.getContext("2d").drawImage(img,0,0,w,h);
+        let url=c.toDataURL("image/webp",0.9); if(!url.startsWith("data:image/webp")) url=c.toDataURL("image/png");
+        if(url.length>120000) return rej(new Error("圖片處理後仍太大，請換一張較簡單的圖"));
+        res(url);
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+app.addEventListener("change",async e=>{
+  const f=e.target.closest("input[data-img]"); if(!f||state.view!=="admin"||!f.files?.[0]) return;
+  try{ const url=await toIconData(f.files[0]); getPath(draft,f.dataset.img).img=url; markDirty(); adminMsg="已加入圖片，記得按「儲存並發布」"; }
+  catch(err){ adminMsg=err.message; }
+  adminRerender();
+});
 app.addEventListener("click",async e=>{
   if(state.view!=="admin") return;
   const b=e.target.closest("[data-act]"); if(!b) return;
   const act=b.dataset.act, list=b.dataset.list, i=+b.dataset.i;
   if(act!=="adm-reset") confirmReset=false;
+  if(act==="img-rm"){ delete getPath(draft,b.dataset.p).img; markDirty(); adminRerender(); return; }
   if(act==="add"){ const arr=getPath(draft,list);
     if(list==="pubs") arr.unshift({year:new Date().getFullYear(),who:"",title:"",cite:"",url:""});
     else if(list.endsWith(".items")) arr.push({zh:"新項目",ic:"dots",c:Object.keys(COLOR_NAMES)[arr.length%6]});

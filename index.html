@@ -579,7 +579,7 @@ function validate(){
 /* ---------- storage ---------- */
 /* ======== Supabase 設定：把下面兩行換成你的專案資料（Supabase → Project Settings → API） ======== */
 const SUPABASE_URL = "https://wglsntdckthysezazvhq.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_F1La8ChR6bw2i5DOTi3aEg_JZcwfYljsY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbHNudGRja3RoeXNlemF6dmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MTcyMTEsImV4cCI6MjEwNjI5MzIxMX0.-Yd_4xp3SqmIcdJbhGRJHbB_s33BcBF-6R_ecYP3qKk";
 /* ======================================================================================== */
 const configured = !/YOUR-/.test(SUPABASE_URL + SUPABASE_ANON_KEY);
 const sb = configured && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
